@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <nav>
+            <ul>
+                <li><a href="{% url 'discover' %}">Discover Rooms</a></li>
+                <li><a href="{% url 'myrooms' %}">My Rooms</a></li>
+                {% if request.user.is_authenticated %}
+                <p>hi {{request.user}}</p>
+                <a href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                <li><a href="{% url 'login' %}"> Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </head>
+    <body>
+        {% if messages %}
+            <ul class="messages">
+                {% for messages in messages %}
+                <li>
+                    {{messages}}
+                </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}
+        {%endblock%}
+    </body>
+</html>

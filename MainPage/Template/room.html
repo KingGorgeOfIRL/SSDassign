@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{%block content%}
+<ul>
+    {% for comment in comments %}
+    <li>
+        <h3>{{comment.creator}}</h3>
+        <p>{{comment.comment}}</p>
+        <small>{{comment.timecreated}}</small>
+    </li>
+    {%endfor%}    
+</ul>
+{%endblock%}

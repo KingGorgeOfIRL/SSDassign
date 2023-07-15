@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{%block content%}
+<ul>
+{% for room in rooms %}
+<li>
+    <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}}</a></h3>
+</li>
+{%endfor%}    
+</ul>
+
+{%endblock%}
