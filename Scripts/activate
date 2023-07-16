@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\asher\OneDrive\Desktop\PersonalProject\FullStackDev\ForumPage\ForumPage"
+VIRTUAL_ENV="C:\Users\asher\OneDrive\Desktop\PersonalProject\FullStackDev\ForumPage"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
