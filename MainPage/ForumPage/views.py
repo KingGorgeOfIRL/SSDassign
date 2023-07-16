@@ -19,26 +19,38 @@ from django.utils.encoding import force_str
 import pyotp
 from datetime import datetime, timedelta
 # Create your views here.
+
 @login_required(login_url='/login')
 def discover(request):
     rooms = ForumRoom.objects.exclude(memberList = request.user)
     htmlvar = {'rooms':rooms}
     return render(request,'discover.html',htmlvar)
+
 @login_required(login_url='/login')
 def myrooms(request):
     rooms = ForumRoom.objects.filter(memberList = request.user)
     htmlvar = {'rooms':rooms}
     return render(request,'myrooms.html',htmlvar)
+
 @login_required(login_url='/login')
 def Accountdets(request):
     htmlvar = {}
     return render(request,'AccountDets.html',htmlvar)
-@login_required(login_url='/login')
+
 def room(request,pk):
     Room = ForumRoom.objects.get(roomName=pk)
+    request.session['room'] = Room
     comments = Comment.objects.filter(room=Room)
     htmlvar = {'comments':comments}
     return render(request,'room.html',htmlvar)
+
+def addComment(request):
+    Room = request.session['room']
+    if request.method == "POST":
+        comment = request.POST.get('Comment')
+        add = Comment(comment=comment, )
+    htmlvar = {'room':Room}
+    render(request, 'comment.html', htmlvar)
 
 #authentication
 def loginUser(request):
