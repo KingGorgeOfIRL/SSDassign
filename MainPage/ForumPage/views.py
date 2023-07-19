@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 
 @login_required(login_url='/login')
 def discover(request):
-    rooms = ForumRoom.objects.exclude(memberList = request.user)
+    rooms = ForumRoom.objects.filter(roomStatus = 'public').exclude(memberList = request.user,)
     htmlvar = {'rooms':rooms}
     return render(request,'discover.html',htmlvar)
 
@@ -49,42 +49,34 @@ def room(request,pk):
     htmlvar = {'comments':comments,'user':user, 'room':Room}
     return render(request,'room.html',htmlvar)
 
-#CRUD
+#room CRUD /done /not validated
 def deleteRoom(request,pk):
-    room = get_object_or_404(ForumRoom, id=pk)
-    if request.user != room.host:
-        return messages.error(request,"rooms does not belong to user ")
- 
+    room = get_object_or_404(ForumRoom, roomName=pk)
+
     if request.method == "POST":
         room.delete()
-        return redirect('home')
+        return redirect('myrooms')
     htmlvar = {"obj":room}
-    return render(request, 'main/delete.html',htmlvar)
+    return render(request, 'CRUD/delete.html',htmlvar)
 
 def createRoom(request):
     user = get_object_or_404(User,username= request.session['username'])
-    users = User.objects.exclude(username__in = ['Guest', request.user.username])
     if request.method == 'POST':
-        #must include input validation
-        name = request.POST.get('roomName')
-        status = request.POST.get('roomStatus')
-        description = request.POST.get('description')
-        modname = request.POST.get('roomModerator')
-        mod = get_object_or_404(User, username=modname)
-        memberlist_name = request.POST.getlist("memberList")
-        memberlist_name.append('Guest')
-        memberlist_name.append(request.session['username'])
-        memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
-        room = ForumRoom.objects.create(
-            roomName= name,
-            roomStatus = status,
-            description = description,
-            roomCreator = user,
-            roomModerator = mod
-        )
-        room.memberList.set(memberlist)
-        return redirect('room',pk=name)
-    htmlvar = {'users':users}
+        form = RoomForm(request.POST,username=request.user.username)
+        if form.is_valid():
+            room = form.save(commit=False)
+            memberlist_name = request.POST.getlist("memberList")
+            memberlist_name.append('Guest')
+            memberlist_name.append(request.session['username'])
+            memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
+            room.save()
+            room.memberList.set(memberlist)
+            room.roomCreator = user
+            room.save()
+            return redirect('room', pk = form['roomName'].value())
+    else:
+        form = RoomForm(username=request.user.username)
+    htmlvar = {'form':form}
     return render(request,'CRUD/roomform.html',htmlvar)
 
 def leaveRoom(request,pk):
@@ -100,9 +92,28 @@ def joinRoom(request,pk):
     return redirect('myrooms')
 
 def editRoom(request,pk):
+    page = 'edit'
+    user = get_object_or_404(User,username= request.session['username'])
     room = get_object_or_404(ForumRoom,roomName=pk)
-    form = RoomForm(instance)
+    form = RoomForm(instance = room, username=request.user.username)
+    if request.method == "POST":
+        form = RoomForm(request.POST,instance=room, username=request.user.username)
+        if form.is_valid():
+            room = form.save(commit=False)
+            memberlist_name = request.POST.getlist("memberList")
+            memberlist_name.append('Guest')
+            memberlist_name.append(request.session['username'])
+            memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
+            room.save()
+            room.memberList.set(memberlist)
+            room.roomCreator = user
+            room.save()
+            return redirect('myrooms')
+    htmlvar = {"form": form, 'room':room, 'page':page}
+    return render(request,'CRUD/roomForm.html',htmlvar)
 
+#comment CRUD /done /not validated
+#read is shown in each rooms and not update function
 def deleteMessage(request,pk):
     message= get_object_or_404(Comment,commentId=pk)
     roomName = request.session['room'] 

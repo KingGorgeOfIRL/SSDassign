@@ -6,7 +6,7 @@
         <h3>{{comment.creator}}</h3>
         <p>{{comment.comment}}</p>
         <small>{{comment.timecreated}}</small>
-        {% if user.username == comment.creator.username or user.username == room.roomCreator or user.username == room.roomModerator %}
+        {% if user.username == comment.creator.username  or user.username == room.roomCreator or user.username == room.roomModerator %}
         <a href="{% url 'deleteMessage' comment.commentId %}">Delete</a>
         {%endif%}
     </li>

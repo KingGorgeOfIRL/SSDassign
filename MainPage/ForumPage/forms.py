@@ -10,11 +10,21 @@ class SignupForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
     
 class RoomForm(ModelForm):
-
-    def __init__(self,username, *args, **kwargs):
+    
+    def __init__(self,*args, **kwargs):
+        username = kwargs.pop('username')
         super(RoomForm, self).__init__(*args, **kwargs)
-        self.fields['memberList'].queryset = User.objects.exclude(username = ['Guest',username])
+        self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest'])
+        self.fields['roomModerator'].queryset = User.objects.exclude(username__in=['Guest'])
     class Meta:
         model = ForumRoom
         fields = ('roomName','roomStatus','description','roomModerator','memberList')
+    
+
+
+    memberList = forms.ModelMultipleChoiceField(
+        queryset= User.objects.all(),
+        to_field_name = 'username',
+        widget = forms.CheckboxSelectMultiple
+    )
 

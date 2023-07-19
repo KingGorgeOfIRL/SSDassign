@@ -5,8 +5,8 @@
 <li>
     <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}}</a></h3>
     <a href="{% url 'leaveRoom' room.roomName %}">Leave room</a>
-    {% if user.username == room.creator %}
-    <a href="{% url 'editRoom' room.roomName}">edit room</a>
+    {% if user == room.roomCreator %}
+        <a href="{% url 'editRoom' room.roomName %}">edit room</a>
     {%endif%}
 </li>
 
