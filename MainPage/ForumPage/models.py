@@ -7,7 +7,7 @@ class ForumRoom(models.Model):
     description = models.CharField(max_length=100,null=True)
     roomCreator = models.ForeignKey(User, on_delete= models.SET_NULL,null=True, related_name='creator')
     roomModerator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='moderator')
-    memberList = models.ManyToManyField(User, related_name='members')
+    memberList = models.ManyToManyField(User, related_name='members',null=True)
 
 class Comment(models.Model):
     commentId = models.AutoField(primary_key=True)

@@ -4,6 +4,7 @@
     {% for room in rooms %}
     <li>
         <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}}</a></h3>
+        <a href="{% url 'joinRoom' room.roomName %}">join room</a>
     </li>
     {%endfor%}    
 </ul>

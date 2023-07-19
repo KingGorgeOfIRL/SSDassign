@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div>
+        <form method="post" action="">
+            {% csrf_token %}
+            <label>room name:</label>
+            <input type="text" name="roomName" placeholder="enter room name">
+            <br>
+            <label>room status:</label>
+            <select name="roomStatus" required id="id_roomStatus">
+                <option value="public" selected>Public</option>
+                <option value="private">Private</option>
+            </select>
+            <br>
+            <label>room description:</label>
+            <input type="text" name="description" placeholder="enter room description">     
+            <br>    
+            <label>room moderator:</label>
+            <select name="roomModerator" id="id_roomModerator">
+                {% for user in users %}
+                    <option value="{{user.username}}">{{user.username}}</option>
+                {%endfor%}
+            </select>
+            <div>
+                <label>Memberlist:</label>
+                <div id="id_memberList">
+                {% for user in users %}
+                <label><input name="memberList" type="checkbox" value="{{user.username}}"> {{user.username}} </label>
+                {%endfor%}                
+                    <div>
+            </div>
+            <input type="submit" value="submit">
+        </form>
+    </div>
+{% endblock content %}
+
+
