@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 {%block content%}
+<form method="post" action="">
+    {% csrf_token %}
+    {{form}}
+    <input type="submit" value="confirm"/>
+</form>
 <ul>
     {% for room in rooms %}
     <li>
-        <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}}</a></h3>
+        <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}} made by: {{room.roomCreator.username}}</a></h3>
         <a href="{% url 'joinRoom' room.roomName %}">join room</a>
     </li>
     {%endfor%}    

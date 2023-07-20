@@ -12,14 +12,17 @@ urlpatterns = [
 #room urls
     path('discover/',views.discover, name='discover'),
     path('myrooms/', views.myrooms,name='myrooms'),
-    path('AccountDetails/',views.Accountdets,name='Accountdets'),
     path('room/<str:pk>/',views.room,name='room'),
 #CRUD
+    #rooms
     path('create_room/', views.createRoom, name='createRoom'),
     path('edit_room/<str:pk>',views.editRoom,name='editRoom'),
     path('delete_room/<str:pk>',views.deleteRoom,name='deleteRoom'),
     path('leave_room/<str:pk>',views.leaveRoom,name='leaveRoom'),
     path('join_room/<str:pk>',views.joinRoom,name='joinRoom'),
+    #search
+
+    #comments
     path('delete_message/<int:pk>',views.deleteMessage,name='deleteMessage'),
     path('add-comment/', views.addComment, name='addComment'),
 ]   

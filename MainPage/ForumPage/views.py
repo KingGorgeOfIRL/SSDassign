@@ -17,13 +17,31 @@ from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.utils.encoding import force_str
 import pyotp
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 # Create your views here.
 
 @login_required(login_url='/login')
 def discover(request):
-    rooms = ForumRoom.objects.filter(roomStatus = 'public').exclude(memberList = request.user,)
-    htmlvar = {'rooms':rooms}
+    rooms = ForumRoom.objects.filter(roomStatus = 'public').exclude(memberList = request.user)
+    if request.method == "POST":
+        form = SearchRoomForm(request.POST)
+        if form.is_valid():
+            roomName = form['Room_Name'].value()
+            roomDesc = form['Room_Description'].value()
+            usernamelist = form['Room_made_by'].value()
+            userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            rooms = ForumRoom.objects.filter(
+                roomName__contains = roomName,
+                description__contains = roomDesc,
+                roomCreator__in = userlist,
+                roomStatus = 'public'
+            ).exclude(memberList = request.user)
+        else:
+            print(form.errors.as_data())
+    else:
+        form = SearchRoomForm()
+        rooms = ForumRoom.objects.filter(roomStatus = 'public').exclude(memberList = request.user)
+    htmlvar = {'rooms':rooms,'form':form}
     return render(request,'discover.html',htmlvar)
 
 @login_required(login_url='/login')
@@ -34,10 +52,6 @@ def myrooms(request):
     htmlvar = {'rooms':rooms, 'user':user}
     return render(request,'myrooms.html',htmlvar)
 
-@login_required(login_url='/login')
-def Accountdets(request):
-    htmlvar = {}
-    return render(request,'AccountDets.html',htmlvar)
 
 def room(request,pk):
     Room = get_object_or_404(ForumRoom,roomName=pk) 
@@ -45,8 +59,27 @@ def room(request,pk):
     request.session['pk'] = pk
     username = request.session['username']
     user = get_object_or_404(User,username=username)
-    comments = Comment.objects.filter(room=Room)
-    htmlvar = {'comments':comments,'user':user, 'room':Room}
+    
+    if request.method == "POST":
+        form = SearchCommentForm(request.POST)
+        if form.is_valid():
+            cleanedPhrase = form['phrase'].value()
+            timeafter = form['comment_made_after'].value()
+            usernamelist = form['comment_made_by'].value()
+            userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            comments = Comment.objects.filter(
+                room=Room, 
+                comment__contains = cleanedPhrase,
+                timecreated__range = [timeafter,date.today()],
+                creator__in = userlist
+            )
+        else:
+            print(form.errors.as_data())
+    else:
+        form = SearchCommentForm()
+        comments = Comment.objects.filter(room=Room)
+
+    htmlvar = {'comments':comments,'user':user, 'room':Room,'form':form}
     return render(request,'room.html',htmlvar)
 
 #room CRUD /done /not validated
