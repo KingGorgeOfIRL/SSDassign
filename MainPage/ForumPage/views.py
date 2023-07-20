@@ -30,6 +30,8 @@ def discover(request):
             roomDesc = form['Room_Description'].value()
             usernamelist = form['Room_made_by'].value()
             userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            if userlist == []:
+                userlist = [user for user in User.objects.all()]
             rooms = ForumRoom.objects.filter(
                 roomName__contains = roomName,
                 description__contains = roomDesc,
@@ -64,21 +66,25 @@ def room(request,pk):
         form = SearchCommentForm(request.POST)
         if form.is_valid():
             cleanedPhrase = form['phrase'].value()
+            #need to validate
             timeafter = form['comment_made_after'].value()
             usernamelist = form['comment_made_by'].value()
             userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            if userlist == []:
+                userlist = [user for user in User.objects.all()]
             comments = Comment.objects.filter(
                 room=Room, 
                 comment__contains = cleanedPhrase,
-                timecreated__range = [timeafter,date.today()],
+                timecreated__gte=timeafter,
                 creator__in = userlist
             )
+
         else:
             print(form.errors.as_data())
     else:
         form = SearchCommentForm()
         comments = Comment.objects.filter(room=Room)
-
+    print(comments)
     htmlvar = {'comments':comments,'user':user, 'room':Room,'form':form}
     return render(request,'room.html',htmlvar)
 
@@ -127,10 +133,10 @@ def joinRoom(request,pk):
 def editRoom(request,pk):
     page = 'edit'
     user = get_object_or_404(User,username= request.session['username'])
-    room = get_object_or_404(ForumRoom,roomName=pk)
-    form = RoomForm(instance = room, username=request.user.username)
+    oldroom = get_object_or_404(ForumRoom,roomName=pk)
+    form = EditRoomForm(instance = oldroom, username=request.user.username)
     if request.method == "POST":
-        form = RoomForm(request.POST,instance=room, username=request.user.username)
+        form = EditRoomForm(request.POST,instance=oldroom, username=request.user.username)
         if form.is_valid():
             room = form.save(commit=False)
             memberlist_name = request.POST.getlist("memberList")
@@ -142,7 +148,7 @@ def editRoom(request,pk):
             room.roomCreator = user
             room.save()
             return redirect('myrooms')
-    htmlvar = {"form": form, 'room':room, 'page':page}
+    htmlvar = {"form": form, 'room':oldroom, 'page':page}
     return render(request,'CRUD/roomForm.html',htmlvar)
 
 #comment CRUD /done /not validated

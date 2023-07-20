@@ -17,5 +17,7 @@
     </li>
     {%endfor%}    
 </ul>
-<a href="{% url 'addComment'%}">add comment</a>
+{% if user.username != 'Guest' %}
+    <a href="{% url 'addComment'%}">add comment</a>
+{%endif%}
 {%endblock%}
