@@ -224,7 +224,7 @@ def registerUser(request):
                 from_email='asherlee.bxl@gmail.com',
                 recipient_list= [to_email]
                 )
-            return messages.error(request,'Please confirm your email address to complete the registration')
+            return HttpResponse('Please confirm your email address to complete the registration')
         else:
             messages.error(request, "An error occured during registration")
     else:
@@ -268,7 +268,6 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request,user)
         return render(request,'Email/emailvalid.html')
     else:
         return messages.error(request,'Activation link is invalid!')
@@ -280,7 +279,6 @@ def send_otp(request):
     valid_date = datetime.now() + timedelta(minutes=1)
     request.session['otp_valid_date'] = str(valid_date)
     user = get_object_or_404(User,username=request.POST.get('username'))
-    print(otp)
     message = render_to_string('Email/OTPEmail.html', {
         'user': user,
         'token': otp,
