@@ -18,10 +18,9 @@ class RoomForm(ModelForm):
         username = kwargs.pop('username')
         super(RoomForm, self).__init__(*args, **kwargs)
         self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest'])
-        self.fields['roomModerator'].queryset = User.objects.exclude(username__in=['Guest'])
     class Meta:
         model = ForumRoom
-        fields = ('roomName','roomStatus','description','roomModerator','memberList')
+        fields = ('roomName','roomStatus','description','memberList')
     
 
 
@@ -37,17 +36,22 @@ class EditRoomForm(ModelForm):
         username = kwargs.pop('username')
         super(EditRoomForm, self).__init__(*args, **kwargs)
         self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest'])
-        self.fields['roomModerator'].queryset = User.objects.exclude(username__in=['Guest'])
+        lis = []
+        room = ForumRoom.objects.get(roomName = self.instance.roomName)
+        lis = [member.username for member in room.memberList.all()]
+        self.fields['roomModerator'].queryset = User.objects.filter(username__in= lis).exclude(username__in=['Guest'])
         self.fields['roomName'].widget.attrs['readonly'] = True
+        self.fields['roomCreator'].disabled = True
     class Meta:
         model = ForumRoom
-        fields = ('roomName','roomStatus','description','roomModerator','memberList')
+        fields = ('roomName','roomStatus','description','roomCreator','roomModerator','memberList')
     
     memberList = forms.ModelMultipleChoiceField(
         queryset= User.objects.all(),
         to_field_name = 'username',
         widget = forms.CheckboxSelectMultiple
     )
+
 
 class SearchCommentForm(forms.Form):
     phrase = forms.CharField(

@@ -84,7 +84,6 @@ def room(request,pk):
     else:
         form = SearchCommentForm()
         comments = Comment.objects.filter(room=Room)
-    print(comments)
     htmlvar = {'comments':comments,'user':user, 'room':Room,'form':form}
     return render(request,'room.html',htmlvar)
 
@@ -111,6 +110,7 @@ def createRoom(request):
             room.save()
             room.memberList.set(memberlist)
             room.roomCreator = user
+            room.roomModerator = user
             room.save()
             return redirect('room', pk = form['roomName'].value())
     else:
@@ -145,7 +145,6 @@ def editRoom(request,pk):
             memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
             room.save()
             room.memberList.set(memberlist)
-            room.roomCreator = user
             room.save()
             return redirect('myrooms')
     htmlvar = {"form": form, 'room':oldroom, 'page':page}
