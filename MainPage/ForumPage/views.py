@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.models import User
-from .models import ForumRoom, Comment
+from .models import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login,logout
@@ -17,6 +17,8 @@ from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.utils.encoding import force_str
 import pyotp
+import dictdiffer
+from django.forms.models import model_to_dict
 from datetime import datetime, timedelta, date
 # Create your views here.
 
@@ -54,7 +56,6 @@ def myrooms(request):
     htmlvar = {'rooms':rooms, 'user':user}
     return render(request,'myrooms.html',htmlvar)
 
-
 def room(request,pk):
     Room = get_object_or_404(ForumRoom,roomName=pk) 
     request.session['room'] = Room.roomName
@@ -90,9 +91,19 @@ def room(request,pk):
 #room CRUD /done /not validated
 def deleteRoom(request,pk):
     room = get_object_or_404(ForumRoom, roomName=pk)
-
+    obj_dict = model_to_dict(room)
+    obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
+    old_dict = {k: obj_dict[k] for k in obj_dict}
     if request.method == "POST":
         room.delete()
+        Logs.objects.create(
+        actiontype = 'Delete',
+        place = f'room/',
+        action = {
+            'room': old_dict
+        },
+        user = request.user.username
+        )
         return redirect('myrooms')
     htmlvar = {"obj":room}
     return render(request, 'CRUD/delete.html',htmlvar)
@@ -112,6 +123,16 @@ def createRoom(request):
             room.roomCreator = user
             room.roomModerator = user
             room.save()
+            obj_dict = model_to_dict(room)
+            obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
+            Logs.objects.create(
+                actiontype = 'Create',
+                place = f'room/{room.roomName}',
+                action = {
+                    'room': obj_dict
+                },
+                user = request.user.username
+                )
             return redirect('room', pk = form['roomName'].value())
     else:
         form = RoomForm(username=request.user.username)
@@ -126,15 +147,18 @@ def leaveRoom(request,pk):
 
 def joinRoom(request,pk):
     room = get_object_or_404(ForumRoom, roomName= pk)
-    user = get_object_or_404(User, username=request.user.username)    
+    user = get_object_or_404(User, username=request.user.username)
+        
     room.memberList.add(user)
     return redirect('myrooms')
 
 def editRoom(request,pk):
     page = 'edit'
-    user = get_object_or_404(User,username= request.session['username'])
     oldroom = get_object_or_404(ForumRoom,roomName=pk)
     form = EditRoomForm(instance = oldroom, username=request.user.username)
+    obj_dict = model_to_dict(oldroom)
+    obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
+    old_dict = {k: obj_dict[k] for k in obj_dict}
     if request.method == "POST":
         form = EditRoomForm(request.POST,instance=oldroom, username=request.user.username)
         if form.is_valid():
@@ -143,9 +167,20 @@ def editRoom(request,pk):
             memberlist_name.append('Guest')
             memberlist_name.append(request.session['username'])
             memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
-            room.save()
             room.memberList.set(memberlist)
             room.save()
+            obj_dict = model_to_dict(room)
+            obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
+            diff = {}
+            for (k,v),(k2,v2) in zip(old_dict.items(),obj_dict.items()):
+                if v != v2:
+                    diff[k] = (v,v2)
+            Logs.objects.create(
+                actiontype = 'Update',
+                place = f'room/{room.roomName}',
+                action = diff,
+                user = request.session['username']
+            )
             return redirect('myrooms')
     htmlvar = {"form": form, 'room':oldroom, 'page':page}
     return render(request,'CRUD/roomForm.html',htmlvar)
@@ -159,10 +194,19 @@ def deleteMessage(request,pk):
     user = get_object_or_404(User, username = request.user.username)
     if user != message.creator and (user != room.roomModerator or user != room.roomCreator):
         return messages.error(request,"user does not have permission to do this ")
- 
+    obj_dict = model_to_dict(message)
+    old_dict = {k: obj_dict[k] for k in obj_dict}
     if request.method == "POST":
         message.delete()
         pk = request.session['pk']
+        Logs.objects.create(
+        actiontype = 'Delete',
+        place = f'room/{room.roomName}/comment',
+        action = {
+            'comment': old_dict
+        },
+        user = request.user.username
+        )
         return redirect('room',pk=pk)
     htmlvar = {"obj":message}
     return render(request, 'CRUD/delete.html',htmlvar)
@@ -175,10 +219,19 @@ def addComment(request):
     user = get_object_or_404(User,username=username)
     if request.method == "POST":
         comment = request.POST.get('Comment')
-        add = Comment.objects.create(
+        Comment.objects.create(
             comment=comment,
             creator=user,
             room=room
+        )
+        Logs.objects.create(
+            actiontype = 'Create',
+            place = f'room/{room.roomName}',
+            action = {
+                'comment' : comment,
+                'creator': user.username
+            },
+            user = username
         )
         return  redirect('room',pk=pk)
     htmlvar = {'room':room}
@@ -296,6 +349,7 @@ def send_otp(request):
         from_email='asherlee.bxl@gmail.com',
         recipient_list= [to_email]
         )
+    print(otp)
     
 def guestLogin(request):
     if request.user.is_authenticated:
@@ -312,3 +366,4 @@ def guestLogin(request):
             return redirect('myrooms')
     htmlvar = {}
     return render(request,'login.html',htmlvar)
+

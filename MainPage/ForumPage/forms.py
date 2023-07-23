@@ -17,7 +17,7 @@ class RoomForm(ModelForm):
     def __init__(self,*args, **kwargs):
         username = kwargs.pop('username')
         super(RoomForm, self).__init__(*args, **kwargs)
-        self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest'])
+        self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest','KingGeorgeTheThird'])
     class Meta:
         model = ForumRoom
         fields = ('roomName','roomStatus','description','memberList')
@@ -35,11 +35,11 @@ class EditRoomForm(ModelForm):
     def __init__(self,*args, **kwargs):
         username = kwargs.pop('username')
         super(EditRoomForm, self).__init__(*args, **kwargs)
-        self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest'])
+        self.fields['memberList'].queryset = User.objects.exclude(username__in=[username,'Guest','KingGeorgeTheThird'])
         lis = []
         room = ForumRoom.objects.get(roomName = self.instance.roomName)
         lis = [member.username for member in room.memberList.all()]
-        self.fields['roomModerator'].queryset = User.objects.filter(username__in= lis).exclude(username__in=['Guest'])
+        self.fields['roomModerator'].queryset = User.objects.filter(username__in= lis).exclude(username__in=['Guest','KingGeorgeTheThird'])
         self.fields['roomName'].widget.attrs['readonly'] = True
         self.fields['roomCreator'].disabled = True
     class Meta:

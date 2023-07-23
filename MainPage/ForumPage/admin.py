@@ -3,4 +3,5 @@ from .models import *
 
 admin.site.register(ForumRoom)
 admin.site.register(Comment)
+admin.site.register(Logs)
 # Register your models here.

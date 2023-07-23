@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import JSONField
 # Create your models here.
 class ForumRoom(models.Model):
     roomName = models.CharField(max_length=50, primary_key=True)
@@ -15,4 +16,13 @@ class Comment(models.Model):
     timecreated = models.DateTimeField(auto_now_add=True)
     room = models.ForeignKey(ForumRoom,on_delete=models.SET_NULL, null=True)
     creator = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='comment_creator')
-    
+
+class Logs(models.Model):
+    logID = models.AutoField(primary_key=True)
+    timelogged = models.DateTimeField(auto_now_add=True)
+    user = models.CharField(max_length=50,null=True)
+    actiontype = models.CharField(
+        max_length=30,
+        choices=[('Create','create'),('Read','read'),('Update','update'),('Delete','delete')])
+    place = models.CharField(max_length=100,default='empty')
+    action = JSONField()
