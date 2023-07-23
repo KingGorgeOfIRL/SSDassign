@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_otp',
     'django_otp.plugins.otp_totp',
-
+    'sslserver',
     'ForumPage.apps.ForumpageConfig',
 
 ]
@@ -141,14 +141,15 @@ EMAIL_HOST_USER = 'asherlee.bxl@gmail.com'
 EMAIL_HOST_PASSWORD = 'qzspxucghdakmxfa'
 DEFAULT_FROM_EMAIL = 'asherlee.bxl@gmail.com'
 
-
-""" SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_AGE = 30 * 60
+SESSION_SAVE_EVERY_REQUEST = True 
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SECURE_BROWSER_XSS_FILTER = True
-SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_SECONDS = 30 * 60
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-CSRF_COOKIE_SECURE = True """
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
