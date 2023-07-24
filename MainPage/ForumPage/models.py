@@ -18,6 +18,7 @@ class ForumRoom(models.Model):
     roomModerator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='moderator')
     memberList = models.ManyToManyField(User, related_name='members')
 
+
 class Comment(models.Model):
     commentId = models.AutoField(primary_key=True)
     comment = models.CharField(max_length=500)

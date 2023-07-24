@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+
 {%block content%}
 <ul>
 {% for room in rooms %}
 <li>
     <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}} made by: {{room.roomCreator.username}}</a></h3>
     <p>{{room.description}}</p>
+    
     {% if user.username != 'Guest' %}
         <a href="{% url 'leaveRoom' room.roomName %}">Leave room</a>
         {% if user == room.roomCreator %}

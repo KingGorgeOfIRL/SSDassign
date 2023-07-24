@@ -117,6 +117,7 @@ def createRoom(request):
             room.memberList.set(memberlist)
             room.roomCreator = user
             room.roomModerator = user
+            room.roomName = str(room.roomName).replace('/',' ')
             room.save()
             obj_dict = model_to_dict(room)
             obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
@@ -128,7 +129,7 @@ def createRoom(request):
                 },
                 user = request.user.username
                 )
-            return redirect('room', pk = form['roomName'].value())
+            return redirect('room', pk = room.roomName)
     else:
         form = RoomForm(username=request.user.username)
     htmlvar = {'form':form}
@@ -365,9 +366,9 @@ def guestLogin(request):
     if request.method == "GET":
         username = 'Guest'
         password = 'Guest@room1'
-
         user = get_object_or_404(get_user_model(),username=username)
-        user = authenticate(request,username=username,password=password)
+        user.is_active = True
+        user.save()
         if user is not None:
             login(request,user)
             request.session['username'] = username

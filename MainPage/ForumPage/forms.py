@@ -6,11 +6,15 @@ from django.forms import ModelForm
 from datetime import date
 from django.db import models
 from django.db.models import Model
+class EmailLowerField(forms.EmailField):
+    def to_python(self, value):
+        return value.lower()
 class SignupForm(UserCreationForm):  
     email = forms.EmailField(max_length=200, help_text='Required')  
     class Meta:  
         model = get_user_model()  
         fields = ('username', 'email', 'password1', 'password2')
+    email = EmailLowerField(required=True)
     
 class RoomForm(ModelForm):
     
@@ -49,7 +53,8 @@ class EditRoomForm(ModelForm):
     memberList = forms.ModelMultipleChoiceField(
         queryset= get_user_model().objects.all(),
         to_field_name = 'username',
-        widget = forms.CheckboxSelectMultiple
+        widget = forms.CheckboxSelectMultiple,
+        required=False
     )
 
 
