@@ -1,7 +1,14 @@
 asgiref==3.7.2
+colorama==0.4.6
+dictdiffer==0.9.0
 Django==4.2.3
+django-lockout==0.1.1
 django-otp==1.2.2
+django-sslserver==0.22
 pyotp==2.8.0
+pypng==0.20220715.0
+qrcode==7.4.2
 six==1.16.0
 sqlparse==0.4.4
-tzdata==2023.3
+typing_extensions==4.7.1
+tzdata==2023.3S
