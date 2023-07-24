@@ -1,25 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login,logout
-from django.contrib.auth.models import User
-from .models import *
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login,logout
-from .forms import *
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth import authenticate, login,logout,get_user_model
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib import messages
+from .forms import *
 from .tokens import *
+from .models import *
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import send_mail
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes,force_str
 from django.template.loader import render_to_string
-from django.utils.encoding import force_str
 import pyotp
-import dictdiffer
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 # Create your views here.
 
 @login_required(login_url='/login')
@@ -31,9 +25,9 @@ def discover(request):
             roomName = form['Room_Name'].value()
             roomDesc = form['Room_Description'].value()
             usernamelist = form['Room_made_by'].value()
-            userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            userlist = [get_object_or_404(get_user_model(),username=userName) for userName in usernamelist]
             if userlist == []:
-                userlist = [user for user in User.objects.all()]
+                userlist = [user for user in get_user_model().objects.all()]
             rooms = ForumRoom.objects.filter(
                 roomName__contains = roomName,
                 description__contains = roomDesc,
@@ -51,17 +45,18 @@ def discover(request):
 @login_required(login_url='/login')
 def myrooms(request):
     rooms = ForumRoom.objects.filter(memberList = request.user)
-    user = get_object_or_404(User, username = request.user.username)
+    user = get_object_or_404(get_user_model(), username = request.user.username)
 
     htmlvar = {'rooms':rooms, 'user':user}
     return render(request,'myrooms.html',htmlvar)
 
+@login_required(login_url='/login')
 def room(request,pk):
     Room = get_object_or_404(ForumRoom,roomName=pk) 
     request.session['room'] = Room.roomName
     request.session['pk'] = pk
     username = request.session['username']
-    user = get_object_or_404(User,username=username)
+    user = get_object_or_404(get_user_model(),username=username)
     
     if request.method == "POST":
         form = SearchCommentForm(request.POST)
@@ -70,9 +65,9 @@ def room(request,pk):
             #need to validate
             timeafter = form['comment_made_after'].value()
             usernamelist = form['comment_made_by'].value()
-            userlist = [get_object_or_404(User,username=userName) for userName in usernamelist]
+            userlist = [get_object_or_404(get_user_model(),username=userName) for userName in usernamelist]
             if userlist == []:
-                userlist = [user for user in User.objects.all()]
+                userlist = [user for user in get_user_model().objects.all()]
             comments = Comment.objects.filter(
                 room=Room, 
                 comment__contains = cleanedPhrase,
@@ -109,7 +104,7 @@ def deleteRoom(request,pk):
     return render(request, 'CRUD/delete.html',htmlvar)
 
 def createRoom(request):
-    user = get_object_or_404(User,username= request.session['username'])
+    user = get_object_or_404(get_user_model(),username= request.session['username'])
     if request.method == 'POST':
         form = RoomForm(request.POST,username=request.user.username)
         if form.is_valid():
@@ -117,7 +112,7 @@ def createRoom(request):
             memberlist_name = request.POST.getlist("memberList")
             memberlist_name.append('Guest')
             memberlist_name.append(request.session['username'])
-            memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
+            memberlist = [get_object_or_404(get_user_model(), username=username) for username in memberlist_name]
             room.save()
             room.memberList.set(memberlist)
             room.roomCreator = user
@@ -141,13 +136,13 @@ def createRoom(request):
 
 def leaveRoom(request,pk):
     room = get_object_or_404(ForumRoom, roomName= pk)
-    user = get_object_or_404(User, username=request.user.username)    
+    user = get_object_or_404(get_user_model(), username=request.user.username)    
     room.memberList.remove(user)
     return redirect('myrooms')
 
 def joinRoom(request,pk):
     room = get_object_or_404(ForumRoom, roomName= pk)
-    user = get_object_or_404(User, username=request.user.username)
+    user = get_object_or_404(get_user_model(), username=request.user.username)
         
     room.memberList.add(user)
     return redirect('myrooms')
@@ -166,7 +161,7 @@ def editRoom(request,pk):
             memberlist_name = request.POST.getlist("memberList")
             memberlist_name.append('Guest')
             memberlist_name.append(request.session['username'])
-            memberlist = [get_object_or_404(User, username=username) for username in memberlist_name]
+            memberlist = [get_object_or_404(get_user_model(), username=username) for username in memberlist_name]
             room.memberList.set(memberlist)
             room.save()
             obj_dict = model_to_dict(room)
@@ -191,7 +186,7 @@ def deleteMessage(request,pk):
     message= get_object_or_404(Comment,commentId=pk)
     roomName = request.session['room'] 
     room = get_object_or_404(ForumRoom,roomName=roomName) 
-    user = get_object_or_404(User, username = request.user.username)
+    user = get_object_or_404(get_user_model(), username = request.user.username)
     if user != message.creator and (user != room.roomModerator or user != room.roomCreator):
         return messages.error(request,"user does not have permission to do this ")
     obj_dict = model_to_dict(message)
@@ -216,7 +211,7 @@ def addComment(request):
     room = get_object_or_404(ForumRoom,roomName=roomname) 
     username = request.session['username']
     pk = request.session['pk']
-    user = get_object_or_404(User,username=username)
+    user = get_object_or_404(get_user_model(),username=username)
     if request.method == "POST":
         comment = request.POST.get('Comment')
         Comment.objects.create(
@@ -245,15 +240,28 @@ def loginUser(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+        try:
+            user1 =get_user_model().objects.get(username=username)
 
-        user = get_object_or_404(User,username=username)
+        except:
+            messages.error(request,'invalid username')
+            htmlvar = {'page':page}
+            return render(request,'login.html',htmlvar)
         user = authenticate(request,username=username,password=password)
-        if user is not None:
-            request.session['username'] = username
-            send_otp(request)
-            return redirect('otp')
+        if not user1.lockedout:
+            if user is not None:            
+                request.session['username'] = username
+                send_otp(request)
+                return redirect('otp')
+            elif user1 is not None:
+                user1.login_attempts += 1 
+                print(user1.login_attempts)
+                if int(user1.login_attempts) > 3:
+                    user1.lockedout = True
+                user1.save()
+                messages.error(request,'invalid password')
         else:
-            messages.error(request,'invalid username or password')
+            messages.error(request,'user has been locked out, please contact your admin')            
     htmlvar = {'page':page}
     return render(request,'login.html',htmlvar)
 
@@ -265,8 +273,7 @@ def registerUser(request):
     if request.method == "POST":
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.save()
+            user = form.save()
             current_site = get_current_site(request)
             mail_subject = 'Activate your account.'
             message = render_to_string('Email/emailVerification.html', {
@@ -282,7 +289,8 @@ def registerUser(request):
                 from_email='asherlee.bxl@gmail.com',
                 recipient_list= [to_email]
                 )
-            return HttpResponse('Please confirm your email address to complete the registration')
+            messages.error(request,'Please confirm your email address to complete the registration')
+            return redirect('myrooms')
         else:
             messages.error(request, "An error occured during registration")
     else:
@@ -303,7 +311,7 @@ def OTPview(request):
             if valid_until > datetime.now():
                 totp = pyotp.TOTP(otp_secret_key,interval=60)
                 if totp.verify(otp):
-                    user = get_object_or_404(User,username=username)
+                    user = get_object_or_404(get_user_model(),username=username)
                     login(request,user)
                     del request.session['otp_secret_key']
                     del request.session['otp_valid_date']
@@ -336,7 +344,7 @@ def send_otp(request):
     request.session['otp_secret_key'] = totp.secret
     valid_date = datetime.now() + timedelta(minutes=1)
     request.session['otp_valid_date'] = str(valid_date)
-    user = get_object_or_404(User,username=request.POST.get('username'))
+    user = get_object_or_404(get_user_model(),username=request.POST.get('username'))
     message = render_to_string('Email/OTPEmail.html', {
         'user': user,
         'token': otp,
@@ -358,7 +366,7 @@ def guestLogin(request):
         username = 'Guest'
         password = 'Guest@room1'
 
-        user = get_object_or_404(User,username=username)
+        user = get_object_or_404(get_user_model(),username=username)
         user = authenticate(request,username=username,password=password)
         if user is not None:
             login(request,user)

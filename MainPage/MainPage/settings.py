@@ -41,8 +41,7 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'sslserver',
-    'ForumPage.apps.ForumpageConfig',
-
+    'ForumPage',
 ]
 
 MIDDLEWARE = [
@@ -90,7 +89,7 @@ DATABASES = {
         'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
-
+AUTH_USER_MODEL = 'ForumPage.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

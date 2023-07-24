@@ -1,7 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db.models import JSONField
+from django.contrib.auth import get_user_model
 # Create your models here.
+class User(AbstractUser):
+    email = models.EmailField(unique=True,max_length=255)
+    login_attempts = models.IntegerField(default=0)
+    lockedout = models.BooleanField(default=False)
+    REQUIRED_FIELDS = ['email']
+
+
 class ForumRoom(models.Model):
     roomName = models.CharField(max_length=50, primary_key=True)
     roomStatus = models.CharField(max_length=20,choices=[('public','Public'),('private','Private')])
