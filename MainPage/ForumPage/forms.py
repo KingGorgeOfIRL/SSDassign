@@ -4,18 +4,18 @@ from django.contrib.auth import get_user_model
 from .models import Comment, ForumRoom
 from django.forms import ModelForm
 from datetime import date
-from django.db import models
-from django.db.models import Model
+from captcha.fields import CaptchaField
 class EmailLowerField(forms.EmailField):
     def to_python(self, value):
         return value.lower()
-class SignupForm(UserCreationForm):  
-    email = forms.EmailField(max_length=200, help_text='Required')  
+
+class SignupForm(UserCreationForm):   
+    email = EmailLowerField(max_length=200, required=True)
+    captcha_field = CaptchaField()
     class Meta:  
         model = get_user_model()  
         fields = ('username', 'email', 'password1', 'password2')
-    email = EmailLowerField(required=True)
-    
+  
 class RoomForm(ModelForm):
     
     def __init__(self,*args, **kwargs):
@@ -56,7 +56,6 @@ class EditRoomForm(ModelForm):
         widget = forms.CheckboxSelectMultiple,
         required=False
     )
-
 
 class SearchCommentForm(forms.Form):
     phrase = forms.CharField(

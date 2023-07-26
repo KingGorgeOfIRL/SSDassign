@@ -22,4 +22,5 @@ from django_otp.admin import OTPAdminSite
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('ForumPage.urls')),
+    path('captcha/',include('captcha.urls')),
 ]
