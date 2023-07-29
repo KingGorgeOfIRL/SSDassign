@@ -26,3 +26,4 @@ urlpatterns = [
     path('delete_message/<int:pk>',views.deleteMessage,name='deleteMessage'),
     path('add-comment/', views.addComment, name='addComment'),
 ]   
+handler403 = views.handler403

@@ -26,12 +26,11 @@ class RoomForm(ModelForm):
         model = ForumRoom
         fields = ('roomName','roomStatus','description','memberList')
     
-
-
     memberList = forms.ModelMultipleChoiceField(
         queryset= get_user_model().objects.all(),
         to_field_name = 'username',
-        widget = forms.CheckboxSelectMultiple
+        widget = forms.CheckboxSelectMultiple,
+        
     )
 
 class EditRoomForm(ModelForm):

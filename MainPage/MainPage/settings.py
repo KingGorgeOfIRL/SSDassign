@@ -54,9 +54,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware'
+    'django_otp.middleware.OTPMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
 ]
-
+RATELIMIT_VIEW = 'ForumPage.views.handler403'
 ROOT_URLCONF = 'MainPage.urls'
 LOGIN_URL = 'login/'
 TEMPLATES = [
@@ -92,6 +93,13 @@ DATABASES = {
 }
 AUTH_USER_MODEL = 'ForumPage.User'
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "Rate-Limit",
+    }
+}
+RATELIMIT_USE_CACHE = 'default'
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 

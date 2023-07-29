@@ -11,9 +11,11 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_bytes,force_str
 from django.template.loader import render_to_string
 import pyotp
-from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from datetime import datetime, timedelta
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
+from django.http import HttpResponse, HttpResponseForbidden
 # Create your views here.
 
 @login_required(login_url='/login')
@@ -113,11 +115,11 @@ def createRoom(request):
             memberlist_name.append('Guest')
             memberlist_name.append(request.session['username'])
             memberlist = [get_object_or_404(get_user_model(), username=username) for username in memberlist_name]
-            room.save()
-            room.memberList.set(memberlist)
             room.roomCreator = user
             room.roomModerator = user
             room.roomName = str(room.roomName).replace('/',' ')
+            room.save()
+            room.memberList.set(memberlist)
             room.save()
             obj_dict = model_to_dict(room)
             obj_dict['memberList'] = [user.username for user in obj_dict['memberList']]
@@ -207,6 +209,7 @@ def deleteMessage(request,pk):
     htmlvar = {"obj":message}
     return render(request, 'CRUD/delete.html',htmlvar)
 
+@ratelimit(key='post:username', rate='2/m',block=True)
 def addComment(request):
     roomname = request.session['room']
     room = get_object_or_404(ForumRoom,roomName=roomname) 
@@ -232,6 +235,10 @@ def addComment(request):
         return  redirect('room',pk=pk)
     htmlvar = {'room':room}
     return render(request, 'comment.html', htmlvar)
+
+def handler403(request, exception):
+    messages.error(request,'you have exceeded the maximum number of comments per minute')
+    return redirect('room',pk=request.session['pk'])
 
 #authentication /done /not validated
 def loginUser(request):
