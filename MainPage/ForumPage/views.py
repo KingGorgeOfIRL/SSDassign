@@ -209,7 +209,7 @@ def deleteMessage(request,pk):
     htmlvar = {"obj":message}
     return render(request, 'CRUD/delete.html',htmlvar)
 
-@ratelimit(key='post:username', rate='2/m',block=True)
+@ratelimit(key='post:username', rate='20/m',block=True)
 def addComment(request):
     roomname = request.session['room']
     room = get_object_or_404(ForumRoom,roomName=roomname) 

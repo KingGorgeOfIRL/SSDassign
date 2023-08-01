@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*bjs&d6ujx5n4ied@73a41^#u03!+sg3w3md4%*^ejh*^&pnse'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -151,9 +151,9 @@ DEFAULT_FROM_EMAIL = 'asherlee.bxl@gmail.com'
 
 SESSION_COOKIE_AGE = 30 * 60
 SESSION_SAVE_EVERY_REQUEST = True 
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_HSTS_SECONDS = 30 * 60
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
