@@ -7,7 +7,7 @@ urlpatterns = [
     path('register/',views.registerUser, name='register'),    
     path("logout/",views.logoutUser , name="logout"),
     path("Guest-Login",views.guestLogin, name="login-guest"),
-    path('emailVerification/<uidb64>/<token>', views.activate, name='activate'),
+    path('activate/<uidb64>/<token>', views.activate, name='activate'),
     path('OTP/',views.OTPview,name='otp'),
 #room urls
     path('discover/',views.discover, name='discover'),

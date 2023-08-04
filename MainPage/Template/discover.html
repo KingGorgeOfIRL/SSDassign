@@ -10,7 +10,9 @@
     <li>
         <h3><a href="{% url 'room' room.roomName %}">{{room.roomName}} made by: {{room.roomCreator.username}}</a></h3>
         <p>{{room.description}}</p>
+        {% if request.user.username != 'Guest' %}
         <a href="{% url 'joinRoom' room.roomName %}">join room</a>
+        {%endif%}
     </li>
     {%endfor%}    
 </ul>
