@@ -25,10 +25,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme')
 '*bjs&d6ujx5n4ied@73a41^#u03!+sg3w3md4%*^ejh*^&pnse'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =  bool(int(os.environ.get('DEBUG', 0)))
+DEBUG =  bool(int(os.environ.get('DEBUG', 1)))
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
 if ALLOWED_HOSTS_ENV:
     ALLOWED_HOSTS.extend(ALLOWED_HOSTS_ENV.split(','))
@@ -98,6 +98,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASS'),
     }
 }
+
 AUTH_USER_MODEL = 'ForumPage.User'
 
 CACHES = {

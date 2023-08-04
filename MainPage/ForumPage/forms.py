@@ -56,6 +56,7 @@ class EditRoomForm(ModelForm):
         required=False
     )
 
+#comments searchbar
 class SearchCommentForm(forms.Form):
     phrase = forms.CharField(
         label='search comment',
