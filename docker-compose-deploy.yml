@@ -47,7 +47,7 @@ services:
   certbot:
     build:
       context: ./docker/certbot
-    command: ./opt/certify-init.sh
+    command: echo "skipping"
     environment:
       - EMAIL=${ACME_DEFAULT_EMAIL}
       - DOMAIN=${DOMAIN}
