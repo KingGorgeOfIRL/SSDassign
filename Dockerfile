@@ -4,7 +4,7 @@ LABEL maintainer="londonappdeveloper.com"
 ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /requirements.txt
-COPY ./MainPage /mainpage
+COPY ./MainPage /MainPage
 COPY ./scripts /scripts
 
 WORKDIR /mainpage
