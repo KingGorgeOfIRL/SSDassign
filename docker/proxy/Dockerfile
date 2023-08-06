@@ -13,5 +13,6 @@ RUN apk add --no-cache openssl bash && \
 
 VOLUME /vol/static
 VOLUME /vol/www
+VOLUME /vol/web
 
 CMD ["/run.sh"]
