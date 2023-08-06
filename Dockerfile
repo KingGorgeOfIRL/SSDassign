@@ -7,7 +7,7 @@ COPY ./requirements.txt /requirements.txt
 COPY ./MainPage /MainPage
 COPY ./scripts /scripts
 
-WORKDIR /mainpage
+WORKDIR /MainPage
 EXPOSE 8000
 
 RUN python -m venv /py && \
