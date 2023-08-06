@@ -6,7 +6,7 @@ services:
       context: .
     restart: always
     volumes:
-      - ./MainPage:/MainPSage
+      - ./MainPage:/MainPage
       - static-data:/vol/web
     environment:
       - DB_HOST=db
