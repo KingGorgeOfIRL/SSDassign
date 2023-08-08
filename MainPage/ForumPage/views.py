@@ -330,7 +330,7 @@ def loginUser(request):
                         messages.error(request,'please vaildate email first')
                 #user password is not valid, this is a login attempt and it will be recorded 
                 elif user1 is not None:
-                    user1.login_attempts += 0
+                    user1.login_attempts += 1
                     if int(user1.login_attempts) > 3:
                         user1.lockedout = True
                     user1.save()
