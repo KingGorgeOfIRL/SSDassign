@@ -320,7 +320,13 @@ def loginUser(request):
             #checking if valid user is locked out
             if not user1.lockedout:
                 #checking if password is valid
-                if user1.check_password(password): 
+                if user1 is not None:
+                    user1.login_attempts += 1
+                    if int(user1.login_attempts) > 3:
+                        user1.lockedout = True
+                    user1.save()
+                    messages.error(request,'invalid password')                
+                elif user1.check_password(password): 
                     #checking if email is activated
                     if user1.is_active:         
                         request.session['username'] = username
@@ -329,12 +335,7 @@ def loginUser(request):
                     else:
                         messages.error(request,'please vaildate email first')
                 #user password is not valid, this is a login attempt and it will be recorded 
-                elif user1 is not None:
-                    user1.login_attempts += 1
-                    if int(user1.login_attempts) > 3:
-                        user1.lockedout = True
-                    user1.save()
-                    messages.error(request,'invalid password')
+
             else:
                 messages.error(request,'user has been locked out, please contact your admin')         
         except:
